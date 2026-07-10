@@ -2,24 +2,27 @@
 #include <BLEDevice.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
+#include "display.h"
 
 BLEScan* pBLEScan;
 
 class BTCallback : public BLEAdvertisedDeviceCallbacks {
   void onResult(BLEAdvertisedDevice device) {
+    const char* mac = device.getAddress().toString().c_str();
+    int rssi = device.getRSSI();
+    const char* name = device.haveName() ? device.getName().c_str() : nullptr;
+
     Serial.println("----- Bluetooth Device Found -----");
     Serial.print("MAC: ");
-    Serial.println(device.getAddress().toString().c_str());
-
+    Serial.println(mac);
     Serial.print("RSSI: ");
-    Serial.println(device.getRSSI());
-
-    if (device.haveName()) {
+    Serial.println(rssi);
+    if (name) {
       Serial.print("Name: ");
-      Serial.println(device.getName().c_str());
+      Serial.println(name);
     }
 
-    Serial.println("----------------------------------");
+    showDevice(mac, rssi, name);
   }
 };
 
@@ -29,7 +32,7 @@ void initBluetoothScanner() {
 
   pBLEScan = BLEDevice::getScan();
   pBLEScan->setAdvertisedDeviceCallbacks(new BTCallback());
-  pBLEScan->setActiveScan(true);  // active scan = more data
+  pBLEScan->setActiveScan(true);
   pBLEScan->setInterval(100);
   pBLEScan->setWindow(99);
 
@@ -38,6 +41,6 @@ void initBluetoothScanner() {
 
 void startBluetoothScan() {
   Serial.println("Starting Bluetooth scan...");
-  pBLEScan->start(5, false);  // scan for 5 seconds
+  pBLEScan->start(5, false);
   Serial.println("Scan complete.");
 }
